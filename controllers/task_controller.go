@@ -51,5 +51,17 @@ func DeleteTask(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, *task)
+	c.IndentedJSON(http.StatusCreated, *task)
+}
+
+func AddTask(c *gin.Context) {
+	var newTask model.Task
+	err := c.BindJSON(&newTask)
+	if err != nil {
+		return
+	}
+
+	task := data.AddTask(newTask)
+
+	c.IndentedJSON(http.StatusCreated, task)
 }

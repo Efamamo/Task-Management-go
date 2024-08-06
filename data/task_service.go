@@ -1,6 +1,7 @@
 package data
 
 import (
+	"strconv"
 	"time"
 
 	model "github.com/Task-Management-go/models"
@@ -58,4 +59,11 @@ func DeleteTask(ID string) *model.Task {
 
 	}
 	return nil
+}
+
+func AddTask(task model.Task) model.Task {
+	id := strconv.Itoa(len(tasks) + 1)
+	task.ID = id
+	tasks = append(tasks, task)
+	return task
 }

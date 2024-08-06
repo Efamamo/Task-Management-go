@@ -11,7 +11,7 @@ func SetUpRouter() {
 	r.GET("tasks/:id", controller.GetTaskById)
 	r.PUT("/tasks/:id", controller.UpdateItem)
 	r.DELETE("/tasks/:id", controller.DeleteTask)
-	r.POST("/tasks")
+	r.POST("/tasks", controller.AddTask)
 
 	r.Run()
 
