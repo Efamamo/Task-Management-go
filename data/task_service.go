@@ -33,17 +33,13 @@ func UpdateItem(ID string, updatedTask model.Task) *model.Task {
 			if updatedTask.Title != "" {
 				tasks[i].Title = updatedTask.Title
 			}
+
 			if updatedTask.Description != "" {
 				tasks[i].Description = updatedTask.Description
 			}
-			if updatedTask.Status == "In Progress" {
-				tasks[i].Status = "In Progress"
-			}
-			if updatedTask.Status == "Completed" {
-				tasks[i].Status = "Completed"
-			}
-			if updatedTask.Status == "Pending" {
-				tasks[i].Status = "Pending"
+
+			if updatedTask.Status == "In Progress" || updatedTask.Status == "Completed" || updatedTask.Status == "Pending" {
+				tasks[i].Status = updatedTask.Status
 			}
 
 			return &tasks[i]
@@ -51,4 +47,15 @@ func UpdateItem(ID string, updatedTask model.Task) *model.Task {
 	}
 	return nil
 
+}
+
+func DeleteTask(ID string) *model.Task {
+	for i, val := range tasks {
+		if val.ID == ID {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			return &val
+		}
+
+	}
+	return nil
 }

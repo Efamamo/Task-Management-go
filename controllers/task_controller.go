@@ -41,3 +41,15 @@ func UpdateItem(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, *task)
 }
+
+func DeleteTask(c *gin.Context) {
+	id := c.Param("id")
+	task := data.DeleteTask(id)
+
+	if task == nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Task Not Found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, *task)
+}
