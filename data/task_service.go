@@ -1,6 +1,7 @@
 package data
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -28,7 +29,7 @@ func GetTaskById(ID string) *model.Task {
 	return nil
 }
 
-func UpdateItem(ID string, updatedTask model.Task) *model.Task {
+func UpdateItem(ID string, updatedTask model.Task) (*model.Task, error) {
 	for i, val := range tasks {
 		if val.ID == ID {
 			if updatedTask.Title != "" {
@@ -41,12 +42,14 @@ func UpdateItem(ID string, updatedTask model.Task) *model.Task {
 
 			if updatedTask.Status == "In Progress" || updatedTask.Status == "Completed" || updatedTask.Status == "Pending" {
 				tasks[i].Status = updatedTask.Status
+			} else if updatedTask.Status != "" {
+				return nil, errors.New("Status Error")
 			}
 
-			return &tasks[i]
+			return &tasks[i], nil
 		}
 	}
-	return nil
+	return nil, errors.New("Not Found")
 
 }
 
@@ -61,9 +64,12 @@ func DeleteTask(ID string) *model.Task {
 	return nil
 }
 
-func AddTask(task model.Task) model.Task {
+func AddTask(task model.Task) (*model.Task, error) {
 	id := strconv.Itoa(len(tasks) + 1)
+	if task.Status != "In Progress" && task.Status != "Completed" && task.Status != "Pending" {
+		return nil, errors.New("Status Error")
+	}
 	task.ID = id
 	tasks = append(tasks, task)
-	return task
+	return &task, nil
 }

@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Task-Management-go/data"
 	model "github.com/Task-Management-go/models"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 func GetTasks(c *gin.Context) {
@@ -28,13 +30,42 @@ func GetTaskById(c *gin.Context) {
 func UpdateItem(c *gin.Context) {
 	id := c.Param("id")
 	var updatedTask model.Task
-	if err := c.BindJSON(&updatedTask); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&updatedTask); err != nil {
+
+		var validationErrors validator.ValidationErrors
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			validationErrors = errors
+		}
+
+		errorMessages := make(map[string]string)
+		for _, e := range validationErrors {
+			field := e.Field()
+			switch field {
+			case "Title":
+				errorMessages["title"] = "Title is required."
+			case "Description":
+				errorMessages["description"] = "Description is required."
+
+			case "Status":
+				errorMessages["status"] = "Status is required."
+			}
+
+		}
+
+		// Return a 400 Bad Request response with detailed error messages
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errorMessages})
 		return
 	}
-	task := data.UpdateItem(id, updatedTask)
 
-	if task == nil {
+	task, err := data.UpdateItem(id, updatedTask)
+
+	if err != nil && err.Error() == "Status Error" {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Status can only be Pending or In Progress or Completed"})
+		return
+	}
+
+	if err != nil && err.Error() == "Not Found" {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Task Not Found"})
 		return
 	}
@@ -51,17 +82,48 @@ func DeleteTask(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusCreated, *task)
+	c.IndentedJSON(http.StatusAccepted, *task)
 }
 
 func AddTask(c *gin.Context) {
 	var newTask model.Task
-	err := c.BindJSON(&newTask)
-	if err != nil {
+
+	if err := c.ShouldBindJSON(&newTask); err != nil {
+
+		var validationErrors validator.ValidationErrors
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			validationErrors = errors
+		}
+
+		errorMessages := make(map[string]string)
+		for _, e := range validationErrors {
+
+			field := e.Field()
+			fmt.Println(field, "this is field")
+			switch field {
+			case "Title":
+				errorMessages["title"] = "Title is required."
+			case "Description":
+				errorMessages["description"] = "Description is required."
+
+			case "Status":
+				errorMessages["status"] = "Status is required."
+
+			case "DueDate":
+				errorMessages["due_date"] = "DueDate is required."
+			}
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errorMessages})
 		return
 	}
 
-	task := data.AddTask(newTask)
+	task, err := data.AddTask(newTask)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Status can only be Pending or In Progress or Completed"})
+		return
+	}
 
 	c.IndentedJSON(http.StatusCreated, task)
 }
