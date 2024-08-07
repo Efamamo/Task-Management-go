@@ -13,6 +13,6 @@ func SetUpRouter() {
 	r.DELETE("/tasks/:id", controller.DeleteTask)
 	r.POST("/tasks", controller.AddTask)
 
-	r.Run()
+	r.Run("localhost:3000")
 
 }
